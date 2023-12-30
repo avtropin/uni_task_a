@@ -1,8 +1,10 @@
+from time import sleep
+
 from redis import Redis
 from fastapi import FastAPI, WebSocket
 from fastapi.responses import HTMLResponse
 
-from backtasks import processing_request, CELERY_RESPONSE
+from backtasks import processing_request
 from my_html import my_html
 
 tasks_list = []  # имитация хранения списка ключей запросов на стороне клиента
@@ -26,8 +28,11 @@ async def websocket_endpoint(websocket: WebSocket):
     if id is None:
         await websocket.send_text("Нет данных")
     else:
+        sym = ""
         r = Redis("uni_redis", 6379)
-        for sym in CELERY_RESPONSE:
-            if r.set(id, sym):
-                data = r.get((r.keys(pattern=f"*{id}*"))[0])
+        while sym != "$":
+            sleep(0.5)
+            data = r.get((r.keys(pattern=f"*{id}*"))[0])
+            sym = f"{data}"[-2]
+            if sym != "$":
                 await websocket.send_text(f"{data}")

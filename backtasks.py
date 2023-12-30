@@ -1,6 +1,7 @@
 from time import sleep
 
 from celery import Celery
+from redis import Redis
 
 CELERY_RESPONSE = "Hello World!"
 
@@ -9,10 +10,12 @@ celery = Celery(__name__,
                 backend='redis://localhost:6379')
 
 
-@celery.task
+@celery.task(ignore_result=True)
 def processing_request(data):
     hw_string = ""
-    for sym in CELERY_RESPONSE:
+    r = Redis("uni_redis", 6379)
+    id_proc = processing_request.request.id
+    for sym in (CELERY_RESPONSE + "$"):
         hw_string += sym
+        r.set(id_proc, hw_string)
         sleep(1)
-    return {"hw_string": hw_string}
