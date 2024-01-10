@@ -21,7 +21,7 @@ def user_send_message(data):
     return HTMLResponse(my_html)
 
 
-@app.websocket("/ws")
+"""@app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     id = tasks_list.pop()
@@ -35,4 +35,24 @@ async def websocket_endpoint(websocket: WebSocket):
             data = r.get((r.keys(pattern=f"*{id}*"))[0])
             sym = f"{data}"[-2]
             if sym != "$":
-                await websocket.send_text(f"{data}")
+                await websocket.send_text(f"{data}")"""
+
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    id = tasks_list.pop()
+    if id is None:
+        await websocket.send_text("Нет данных")
+    else:
+        sym = ""
+        r = Redis("uni_redis", 6379)
+        w = r.pubsub()
+        w.subscribe(id)
+        while sym != "$":
+            message = w.get_message()
+            sleep(0.5)
+            if message is not None and len(f"{message['data']}") > 2:
+                sym = f"{message['data']}"[-2]
+                if sym != "$":
+                    await websocket.send_text(f"{message['data']}"[2:-1])

@@ -10,7 +10,7 @@ celery = Celery(__name__,
                 backend='redis://localhost:6379')
 
 
-@celery.task(ignore_result=True)
+"""@celery.task(ignore_result=True)
 def processing_request(data):
     hw_string = ""
     r = Redis("uni_redis", 6379)
@@ -18,4 +18,18 @@ def processing_request(data):
     for sym in (CELERY_RESPONSE + "$"):
         hw_string += sym
         r.set(id_proc, hw_string)
+        r.rpush
+        sleep(1)"""
+
+
+@celery.task(ignore_result=True)
+def processing_request(data):
+    hw_string = ""
+    r = Redis("uni_redis", 6379)
+    id_proc = processing_request.request.id
+    for sym in (CELERY_RESPONSE + "$"):
+        hw_string += sym
+        w = r.pubsub()
+        w.subscribe(id_proc)
+        r.publish(id_proc, hw_string)
         sleep(1)
