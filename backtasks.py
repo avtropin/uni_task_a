@@ -27,9 +27,9 @@ def processing_request(data):
     hw_string = ""
     r = Redis("uni_redis", 6379)
     id_proc = processing_request.request.id
+    w = r.pubsub()
+    w.subscribe(id_proc)
     for sym in (CELERY_RESPONSE + "$"):
         hw_string += sym
-        w = r.pubsub()
-        w.subscribe(id_proc)
         r.publish(id_proc, hw_string)
         sleep(1)
