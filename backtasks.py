@@ -22,7 +22,7 @@ def processing_request(data):
         sleep(1)"""
 
 
-@celery.task(ignore_result=True)
+"""@celery.task(ignore_result=True)
 def processing_request(data):
     hw_string = ""
     r = Redis("uni_redis", 6379)
@@ -32,4 +32,15 @@ def processing_request(data):
     for sym in (CELERY_RESPONSE + "$"):
         hw_string += sym
         r.publish(id_proc, hw_string)
+        sleep(1)"""
+
+
+@celery.task(ignore_result=True)
+def processing_request(data):
+    hw_string = ""
+    r = Redis("uni_redis", 6379)
+    id_proc = processing_request.request.id
+    for sym in (CELERY_RESPONSE + "$"):
+        hw_string += sym
+        r.xadd(id_proc, {"value": hw_string})
         sleep(1)

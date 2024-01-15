@@ -38,7 +38,7 @@ async def websocket_endpoint(websocket: WebSocket):
                 await websocket.send_text(f"{data}")"""
 
 
-@app.websocket("/ws")
+"""@app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     id = tasks_list.pop()
@@ -55,4 +55,25 @@ async def websocket_endpoint(websocket: WebSocket):
             if message is not None and len(f"{message['data']}") > 2:
                 sym = f"{message['data']}"[-2]
                 if sym != "$":
-                    await websocket.send_text(f"{message['data']}"[2:-1])
+                    await websocket.send_text(f"{message['data']}"[2:-1])"""
+
+
+@app.websocket("/ws")
+async def websocket_endpoint(websocket: WebSocket):
+    await websocket.accept()
+    id = tasks_list.pop()
+    if id is None:
+        await websocket.send_text("Нет данных")
+    else:
+        sym = ""
+        num = 0
+        r = Redis("uni_redis", 6379)
+        while sym != "$":
+            message = r.xread(streams={id: 0})
+            if r.xlen(id) > num:
+                sym = f"{message[0][1][num][1][b'value']}"[-2]
+                if sym != "$":
+                    await websocket.send_text(
+                        f"{message[0][1][num][1][b'value']}"[2:-1])
+                    num += 1
+            sleep(0.5)
